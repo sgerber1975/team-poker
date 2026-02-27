@@ -57,7 +57,6 @@ async function loadSession() {
   } catch(e) {}
   try { return JSON.parse(localStorage.getItem('pokerSession') || 'null'); } catch { return null; }
 }
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const uid = () => Math.random().toString(36).slice(2,10);
