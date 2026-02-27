@@ -1,52 +1,3 @@
-// ─── Leaderboard ──────────────────────────────────────────────────────────────
-async function updateLeaderboard(players) {
-  const lbRef = db.ref('leaderboard');
-  const snap = await lbRef.once('value');
-  const current = snap.val() || {};
-
-  players.forEach(p => {
-    const key = p.name.replace(/[.#$[\]]/g, '_'); // Firebase key safe
-    const prev = current[key] || { name: p.name, avatar: p.avatar || '😎', bestChips: 0 };
-    if (p.chips > prev.bestChips) {
-      current[key] = { name: p.name, avatar: p.avatar || '😎', bestChips: p.chips };
-    }
-  });
-
-  await lbRef.set(current);
-}
-
-function listenLeaderboard() {
-  db.ref('leaderboard').on('value', snap => {
-    const data = snap.val() || {};
-    const sorted = Object.values(data)
-      .sort((a, b) => b.bestChips - a.bestChips)
-      .slice(0, 10);
-    renderLeaderboard(sorted);
-  });
-}
-
-function renderLeaderboard(entries) {
-  const lb = $('leaderboard');
-  if (!lb) return;
-  const medals = ['🥇','🥈','🥉'];
-  const rankClass = ['gold','silver','bronze'];
-  lb.innerHTML = '<h3>🏆 Top 10</h3>';
-  if (!entries.length) {
-    lb.innerHTML += '<div class="lb-empty">No data yet</div>'; return;
-  }
-  entries.forEach((e, i) => {
-    const row = document.createElement('div');
-    row.className = 'lb-row';
-    row.innerHTML = `
-      <span class="lb-rank ${rankClass[i]||''}">${medals[i]||i+1}</span>
-      <span class="lb-avatar">${e.avatar||'😎'}</span>
-      <span class="lb-name">${e.name}</span>
-      <span class="lb-chips">💰${e.bestChips}</span>
-    `;
-    lb.appendChild(row);
-  });
-}
-
 // ─── Load Firebase ────────────────────────────────────────────────────────────
 function loadScript(url) {
   return new Promise((resolve, reject) => {
@@ -77,11 +28,18 @@ let localState = null;
 
 // ─── Session ──────────────────────────────────────────────────────────────────
 function saveSession() {
-  chrome.storage.local.set({ pokerSession: { myId, myName, myAvatar, roomCode, isHost } });
+  try { chrome.storage.local.set({ pokerSession: { myId, myName, myAvatar, roomCode, isHost } }); }
+  catch(e) { localStorage.setItem('pokerSession', JSON.stringify({ myId, myName, myAvatar, roomCode, isHost })); }
 }
-function clearSession() { chrome.storage.local.remove('pokerSession'); }
+function clearSession() {
+  try { chrome.storage.local.remove('pokerSession'); } catch(e) { localStorage.removeItem('pokerSession'); }
+}
 async function loadSession() {
-  return new Promise(r => chrome.storage.local.get('pokerSession', d => r(d.pokerSession || null)));
+  try {
+    return new Promise(r => chrome.storage.local.get('pokerSession', d => r(d.pokerSession || null)));
+  } catch(e) {
+    try { return JSON.parse(localStorage.getItem('pokerSession') || 'null'); } catch { return null; }
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -104,17 +62,22 @@ function cardEl(card, faceDown=false, small=false) {
   return el;
 }
 
+// ─── Config ───────────────────────────────────────────────────────────────────
 function loadConfig() {
+  // Check injected config from GitHub Actions first
   if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
     return window.FIREBASE_CONFIG;
   }
+  // Fall back to locally saved config
   try { return JSON.parse(localStorage.getItem('pokerFirebaseConfig') || 'null'); }
   catch { return null; }
 }
+function saveConfig(cfg) { localStorage.setItem('pokerFirebaseConfig', JSON.stringify(cfg)); }
 
-// ─── Avatar picker builder ────────────────────────────────────────────────────
+// ─── Avatar picker ────────────────────────────────────────────────────────────
 function buildAvatarPicker(containerId) {
   const c = $(containerId);
+  if (!c) return;
   c.innerHTML = '';
   AVATARS.forEach(av => {
     const d = document.createElement('div');
@@ -129,15 +92,61 @@ function buildAvatarPicker(containerId) {
   });
 }
 
+// ─── Leaderboard ──────────────────────────────────────────────────────────────
+async function updateLeaderboard(players) {
+  const lbRef = db.ref('leaderboard');
+  const snap = await lbRef.once('value');
+  const current = snap.val() || {};
+  players.forEach(p => {
+    const key = p.name.replace(/[.#$[\]]/g, '_');
+    const prev = current[key] || { name: p.name, avatar: p.avatar || '😎', bestChips: 0 };
+    if (p.chips > prev.bestChips) {
+      current[key] = { name: p.name, avatar: p.avatar || '😎', bestChips: p.chips };
+    }
+  });
+  await lbRef.set(current);
+}
+
+function listenLeaderboard() {
+  db.ref('leaderboard').on('value', snap => {
+    const data = snap.val() || {};
+    const sorted = Object.values(data).sort((a,b) => b.bestChips - a.bestChips).slice(0,10);
+    renderLeaderboard(sorted);
+  });
+}
+
+function renderLeaderboard(entries) {
+  const lb = $('leaderboard');
+  if (!lb) return;
+  const medals = ['🥇','🥈','🥉'];
+  const rankClass = ['gold','silver','bronze'];
+  lb.innerHTML = '<h3>🏆 Top 10</h3>';
+  if (!entries.length) { lb.innerHTML += '<div class="lb-empty">No data yet</div>'; return; }
+  entries.forEach((e, i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row';
+    row.innerHTML = `
+      <span class="lb-rank ${rankClass[i]||''}">${medals[i]||i+1}</span>
+      <span class="lb-avatar">${e.avatar||'😎'}</span>
+      <span class="lb-name">${e.name}</span>
+      <span class="lb-chips">💰${e.bestChips}</span>
+    `;
+    lb.appendChild(row);
+  });
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('load', async () => {
-  await loadFirebase();
+  // Check for injected config FIRST before anything async
   const cfg = loadConfig();
-  if (!cfg || !cfg.apiKey) { 
-    showScreen('screen-config'); 
-    setupConfigScreen(); 
-    return; 
+
+  if (!cfg || !cfg.apiKey) {
+    showScreen('screen-config');
+    setupConfigScreen();
+    return;
   }
+
+  await loadFirebase();
   initFirebase(cfg);
 
   const session = await loadSession();
@@ -158,12 +167,17 @@ window.addEventListener('load', async () => {
       } else { clearSession(); showScreen('screen-lobby'); }
       setupLobby();
     });
-  } else { showScreen('screen-lobby'); setupLobby(); }
+  } else {
+    showScreen('screen-lobby');
+    setupLobby();
+  }
   setupConfigScreen();
 });
 
 function setupConfigScreen() {
-  $('btn-save-config').onclick = async () => {
+  const btn = $('btn-save-config');
+  if (!btn) return;
+  btn.onclick = async () => {
     const cfg = {
       apiKey: $('cfg-apiKey').value.trim(),
       projectId: $('cfg-projectId').value.trim(),
@@ -177,7 +191,8 @@ function setupConfigScreen() {
 
 function setupLobby() {
   buildAvatarPicker('avatar-picker');
-  $('btn-reset-config').onclick = () => {
+  const resetBtn = $('btn-reset-config');
+  if (resetBtn) resetBtn.onclick = () => {
     localStorage.removeItem('pokerFirebaseConfig'); clearSession(); showScreen('screen-config');
   };
   $('btn-host').onclick = hostGame;
@@ -187,16 +202,6 @@ function setupLobby() {
     if (roomRef) { roomRef.off(); if (isHost) roomRef.remove(); }
     clearSession(); showScreen('screen-lobby');
   };
-  $('btn-fold').onclick = () => doAction('fold');
-  $('btn-check').onclick = () => doAction('check');
-  $('btn-call').onclick = () => doAction('call');
-  $('btn-raise').onclick = () => {
-    const amt = parseInt($('raise-inp').value);
-    if (!amt||amt<=0) return alert('Enter raise amount');
-    doAction('raise', amt);
-  };
-  $('btn-next-round').onclick = nextRound;
-  $('btn-leave').onclick = leaveGame;
 }
 
 function initFirebase(cfg) {
@@ -341,22 +346,17 @@ function dealRound(players, dealerIdx) {
   roomRef.set({ host:myId, status:'playing', game:gameState });
 }
 
-// ─── Seat positioning (oval) ──────────────────────────────────────────────────
+// ─── Seat positioning ─────────────────────────────────────────────────────────
 function seatPosition(idx, total) {
-  // Distribute seats around an oval, bottom centre = my seat
   const angle = (Math.PI * 2 * idx / total) - Math.PI/2;
-  const rx = 38, ry = 32; // % of viewport
+  const rx = 38, ry = 32;
   const cx = 50, cy = 50;
-  return {
-    left: cx + rx * Math.cos(angle),
-    top:  cy + ry * Math.sin(angle)
-  };
+  return { left: cx + rx * Math.cos(angle), top: cy + ry * Math.sin(angle) };
 }
 
-// ─── Render ───────────────────────────────────────────────────────────────────
+// ─── Game screen ──────────────────────────────────────────────────────────────
 function startListeningGame() {
   showScreen('screen-game');
-  // Build game HTML structure dynamically
   $('screen-game').innerHTML = `
     <div id="game-header">
       <span id="hdr-room">Room: ${roomCode}</span>
@@ -393,13 +393,11 @@ function startListeningGame() {
     <div id="log-area"><div id="log"></div></div>
     <div id="leaderboard"></div>
   `;
-  // Re-bind buttons
+
   $('btn-fold').onclick = () => doAction('fold');
   $('btn-check').onclick = () => doAction('check');
   $('btn-call').onclick = () => doAction('call');
   $('btn-raise').onclick = () => { const a=parseInt($('raise-inp').value); if(!a||a<=0) return; doAction('raise',a); };
-
-  // Menu
   $('btn-menu').onclick = () => $('game-menu').classList.toggle('hidden');
   $('btn-close-menu').onclick = () => $('game-menu').classList.add('hidden');
   $('btn-leave-menu').onclick = () => { $('game-menu').classList.add('hidden'); leaveGame(); };
@@ -424,7 +422,6 @@ function renderGame(g) {
   if ($('hdr-phase')) $('hdr-phase').textContent = (g.phase||'').toUpperCase();
   if ($('phase-badge')) $('phase-badge').textContent = (g.phase||'').toUpperCase();
 
-  // Community cards
   const cc = $('community-cards');
   if (cc) {
     cc.innerHTML = '';
@@ -432,14 +429,11 @@ function renderGame(g) {
     for (let i=0;i<5;i++) cc.appendChild(i<reveal ? cardEl(g.community[i]) : cardEl(null,true));
   }
 
-  // Seats
   const seatsLayer = $('seats-layer');
   if (!seatsLayer) return;
   seatsLayer.innerHTML = '';
   const players = g.players||[];
   const myIdx = (g.playerOrder||[]).indexOf(myId);
-
-  // Rotate so my seat is at bottom centre
   const rotated = [];
   for (let i=0;i<players.length;i++) rotated.push(players[(myIdx+i)%players.length]);
 
@@ -452,14 +446,11 @@ function renderGame(g) {
     if (origIdx===g.actionIdx && !(g.folded||{})[p.id]) seat.classList.add('active-turn');
     if ((g.folded||{})[p.id]) seat.classList.add('folded');
     if (p.id===myId) seat.classList.add('is-me');
-
     seat.style.left = pos.left + 'vw';
     seat.style.top  = pos.top  + 'vh';
-
     const bet = (g.bets||{})[p.id]||0;
     const status = (g.folded||{})[p.id]?'Folded':(g.allin||{})[p.id]?'All-in':'';
     const isDealer = origIdx===g.dealerIdx;
-
     seat.innerHTML = `
       <div class="seat-avatar">
         ${p.avatar||'😎'}
@@ -470,8 +461,6 @@ function renderGame(g) {
       ${bet>0?`<div class="seat-bet">Bet: ${bet}</div>`:''}
       ${status?`<div class="seat-status">${status}</div>`:''}
     `;
-
-    // Show face-down cards for opponents, face-up at showdown
     if (p.id !== myId) {
       const cardRow = document.createElement('div');
       cardRow.className = 'seat-cards';
@@ -483,11 +472,9 @@ function renderGame(g) {
       }
       seat.appendChild(cardRow);
     }
-
     seatsLayer.appendChild(seat);
   });
 
-  // My cards
   const mc = $('my-cards');
   if (mc) {
     mc.innerHTML = '';
@@ -495,7 +482,6 @@ function renderGame(g) {
     if (myHand) { mc.appendChild(cardEl(myHand[0])); mc.appendChild(cardEl(myHand[1])); }
   }
 
-  // Actions
   const isMyTurn = myIdx>=0 && g.actionIdx===myIdx && !(g.folded||{})[myId] && g.phase!=='showdown';
   const ab = $('action-btns'), tm = $('turn-msg');
   if (!ab||!tm) return;
@@ -513,7 +499,6 @@ function renderGame(g) {
     tm.textContent = g.phase==='showdown'?'':(ap?`Waiting for ${ap.name}...`:'');
   }
 
-  // Log
   if (g.log&&g.log.length) {
     const logDiv=$('log'); if (!logDiv) return;
     logDiv.innerHTML='';
@@ -608,7 +593,7 @@ function showResult(g) {
       g.players.forEach(p=>{p.chips=g.stacks[p.id]||0;});
       addLog(g,`${winners.map(w=>w.name).join(', ')} wins ${totalPot}!`,true);
       roomRef.update({game:g});
-      updateLeaderboard(g.players); // ← save to leaderboard
+      updateLeaderboard(g.players);
     }
     const rc=$('result-content'); if(rc) {
       rc.innerHTML='';
@@ -637,7 +622,4 @@ async function nextRound() {
 
 function leaveGame() {
   if(roomRef) roomRef.off(); clearSession(); showScreen('screen-lobby');
-
 }
-
-
