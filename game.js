@@ -133,9 +133,9 @@ function renderLeaderboard(entries) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('load', async () => {
-  const cfg = loadConfig();
-  if (!cfg || !cfg.apiKey) { showScreen('screen-config'); setupConfigScreen(); return; }
   await loadFirebase();
+const cfg = loadConfig();
+if (!cfg || !cfg.apiKey) { showScreen('screen-config'); setupConfigScreen(); return; }
   initFirebase(cfg);
   const session = await loadSession();
   if (session && session.roomCode) {
