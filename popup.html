@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Team Poker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Hand Rankings Panel (always visible) -->
+<div id="hand-rankings">
+  <h3>🃏 Hand Rankings</h3>
+  <div class="hr-row"><span class="hr-rank">1</span><span class="hr-name">Royal Flush</span><span class="hr-cards">A K Q J 10 ♠</span></div>
+  <div class="hr-row"><span class="hr-rank">2</span><span class="hr-name">Straight Flush</span><span class="hr-cards">5 6 7 8 9 ♥</span></div>
+  <div class="hr-row"><span class="hr-rank">3</span><span class="hr-name">Four of a Kind</span><span class="hr-cards">A A A A K</span></div>
+  <div class="hr-row"><span class="hr-rank">4</span><span class="hr-name">Full House</span><span class="hr-cards">K K K Q Q</span></div>
+  <div class="hr-row"><span class="hr-rank">5</span><span class="hr-name">Flush</span><span class="hr-cards">2 5 7 9 K ♦</span></div>
+  <div class="hr-row"><span class="hr-rank">6</span><span class="hr-name">Straight</span><span class="hr-cards">4 5 6 7 8</span></div>
+  <div class="hr-row"><span class="hr-rank">7</span><span class="hr-name">Three of a Kind</span><span class="hr-cards">Q Q Q 4 7</span></div>
+  <div class="hr-row"><span class="hr-rank">8</span><span class="hr-name">Two Pair</span><span class="hr-cards">J J 7 7 A</span></div>
+  <div class="hr-row"><span class="hr-rank">9</span><span class="hr-name">One Pair</span><span class="hr-cards">10 10 4 6 K</span></div>
+  <div class="hr-row"><span class="hr-rank">10</span><span class="hr-name">High Card</span><span class="hr-cards">2 5 8 J A</span></div>
+</div>
+
+<!-- SCREENS -->
+  <div id="screen-config" class="screen">
+    <h1>🃏 Team Poker</h1>
+    <p class="sub">Enter your Firebase config to get started</p>
+    <input id="cfg-apiKey" placeholder="apiKey" />
+    <input id="cfg-projectId" placeholder="projectId" />
+    <input id="cfg-dbUrl" placeholder="databaseURL (https://xxx.firebaseio.com)" />
+    <button id="btn-save-config">Save & Continue</button>
+    <p class="hint">See setup guide for instructions</p>
+  </div>
+
+  <div id="screen-lobby" class="screen hidden">
+    <h1>🃏 Team Poker</h1>
+    <input id="inp-name" placeholder="Your name" maxlength="20" />
+    <p class="hint">Pick your avatar:</p>
+    <div id="avatar-picker"></div>
+    <div class="row">
+      <button id="btn-host">Host Game</button>
+      <button id="btn-join">Join Game</button>
+    </div>
+    <input id="inp-room" placeholder="Room code (to join)" maxlength="6" />
+    <button id="btn-reset-config" class="small">⚙ Reset Firebase Config</button>
+  </div>
+
+  <div id="screen-waiting" class="screen hidden">
+    <h2>Waiting Room</h2>
+    <p>Room Code: <strong id="room-code-display"></strong></p>
+    <p class="hint">Share this code with your team</p>
+    <div id="player-list"></div>
+    <button id="btn-start" class="hidden">▶ Start Game</button>
+    <button id="btn-leave-waiting" class="small">🚪 Leave & Cancel</button>
+    <p id="wait-msg"></p>
+  </div>
+
+  <div id="screen-game" class="screen hidden">
+    <div id="game-header">
+      <span id="hdr-room">Room: </span>
+      <span id="hdr-pot">Pot: 0</span>
+      <span id="hdr-phase"></span>
+    </div>
+
+    <div id="community-area">
+      <div id="community-cards"></div>
+    </div>
+
+    <div id="players-area"></div>
+
+    <div id="my-hand-area">
+      <div id="my-cards"></div>
+      <div id="action-area">
+        <div id="action-btns" class="hidden">
+          <button id="btn-fold">Fold</button>
+          <button id="btn-check">Check</button>
+          <button id="btn-call">Call <span id="call-amt"></span></button>
+          <div class="raise-row">
+            <input id="raise-inp" type="number" min="0" placeholder="Raise to" />
+            <button id="btn-raise">Raise</button>
+          </div>
+        </div>
+        <p id="turn-msg"></p>
+      </div>
+    </div>
+
+    <div id="log-area">
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <div id="screen-result" class="screen hidden">
+    <h2>🏆 Round Over</h2>
+    <div id="result-content"></div>
+    <button id="btn-next-round">Next Round</button>
+    <button id="btn-leave">Leave Game</button>
+  </div>
+<script src="config.js"></script>
+<script src="game.js"></script>
+  <script src="game.js"></script>
+</body>
+
+</html>
