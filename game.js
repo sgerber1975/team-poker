@@ -560,8 +560,8 @@ function renderGame(g) {
     if (origIdx===g.actionIdx && !(g.folded||{})[p.id]) seat.classList.add('active-turn');
     if ((g.folded||{})[p.id]) seat.classList.add('folded');
     if (p.id===myId) seat.classList.add('is-me');
-    seat.style.left = pos.left + 'vw';
-    seat.style.top  = pos.top  + 'vh';
+    seat.style.left = pos.left + 'px';
+    seat.style.top  = pos.top  + 'px';
     const bet = (g.bets||{})[p.id]||0;
     const status = (g.folded||{})[p.id]?'Folded':(g.allin||{})[p.id]?'All-in':'';
     seat.innerHTML = `
