@@ -192,10 +192,10 @@ function setupConfigScreen() {
 
 function setupLobby() {
   buildAvatarPicker('avatar-picker');
-  const resetBtn = $('btn-reset-config');
-  if (resetBtn) resetBtn.onclick = () => {
-    localStorage.removeItem('pokerFirebaseConfig'); clearSession(); showScreen('screen-config');
-  };
+const resetBtn = $('btn-reset-config');
+if (resetBtn) resetBtn.onclick = () => {
+  localStorage.removeItem('pokerFirebaseConfig'); clearSession(); showScreen('screen-config');
+};
   $('btn-host').onclick = hostGame;
   $('btn-join').onclick = joinGame;
   $('btn-start').onclick = startGame;
