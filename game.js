@@ -36,11 +36,10 @@ function clearSession() {
 }
 async function loadSession() {
   try {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      return new Promise(r => chrome.storage.local.get('pokerSession', d => r(d.pokerSession || null)));
-    }
-  } catch(e) {}
-  try { return JSON.parse(localStorage.getItem('pokerSession') || 'null'); } catch { return null; }
+    return new Promise(r => chrome.storage.local.get('pokerSession', d => r(d.pokerSession || null)));
+  } catch(e) {
+    try { return JSON.parse(localStorage.getItem('pokerSession') || 'null'); } catch { return null; }
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -462,7 +461,16 @@ function renderGame(g) {
       ${bet>0?`<div class="seat-bet">Bet: ${bet}</div>`:''}
       ${status?`<div class="seat-status">${status}</div>`:''}
     `;
-    if (p.id !== myId) {
+    // Add my cards to my seat
+    if (p.id === myId) {
+      const myHand = g.hands && g.hands[myId];
+      if (myHand) {
+        const cardRow = document.createElement('div');
+        cardRow.className = 'seat-cards';
+        myHand.forEach(c => cardRow.appendChild(cardEl(c, false, true)));
+        seat.appendChild(cardRow);
+      }
+    } else {
       const cardRow = document.createElement('div');
       cardRow.className = 'seat-cards';
       if (g.phase==='showdown' && g.hands&&g.hands[p.id] && !(g.folded||{})[p.id]) {
@@ -476,12 +484,9 @@ function renderGame(g) {
     seatsLayer.appendChild(seat);
   });
 
+  // Cards now shown at seat - hide bottom card area
   const mc = $('my-cards');
-  if (mc) {
-    mc.innerHTML = '';
-    const myHand = g.hands&&g.hands[myId];
-    if (myHand) { mc.appendChild(cardEl(myHand[0])); mc.appendChild(cardEl(myHand[1])); }
-  }
+  if (mc) mc.innerHTML = '';
 
   const isMyTurn = myIdx>=0 && g.actionIdx===myIdx && !(g.folded||{})[myId] && g.phase!=='showdown';
   const ab = $('action-btns'), tm = $('turn-msg');
@@ -511,7 +516,43 @@ function renderGame(g) {
     logDiv.scrollTop=logDiv.scrollHeight;
   }
 
-  if (g.phase==='showdown') setTimeout(()=>showResult(g),800);
+  if (g.phase==='showdown') setTimeout(()=>showShowdownOverlay(g), 800);
+}
+
+// ─── Show showdown overlay on table ──────────────────────────────────────────
+function showShowdownOverlay(g) {
+  const existing = document.getElementById('showdown-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'showdown-overlay';
+  overlay.style.cssText = `
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:rgba(0,0,0,0.85); border:2px solid #ffd700;
+    border-radius:16px; padding:20px 30px; z-index:200;
+    text-align:center; min-width:320px;
+  `;
+  const nonFolded = g.players.filter(p=>!g.folded[p.id]);
+  const totalPot = (g.pot||0) + Object.values(g.bets).reduce((a,b)=>a+b,0);
+  const allCards = g.community.slice(0,5);
+  const hands = nonFolded.map(p=>({player:p, best:bestHand([...g.hands[p.id],...allCards])}));
+  hands.sort((a,b)=>compareHandVal(b.best,a.best));
+  const best = hands[0].best;
+  const winners = hands.filter(h=>compareHandVal(h.best,best)===0).map(h=>h.player);
+
+  let html = `<h2 style="color:#ffd700;margin-bottom:12px">🏆 Showdown!</h2>`;
+  hands.forEach(h => {
+    const isWinner = winners.find(w=>w.id===h.player.id);
+    html += `<div style="padding:6px 0;border-bottom:1px solid #333;color:${isWinner?'#ffd700':'#ccc'}">
+      ${h.player.avatar||'😎'} <b>${h.player.name}</b>: ${h.best.name}
+      ${isWinner ? ' 🏆' : ''}
+    </div>`;
+  });
+  html += `<div style="margin-top:12px;color:#ffd700;font-size:18px">Pot: ${totalPot} chips</div>`;
+  if (isHost) html += `<button onclick="nextRound()" style="margin-top:14px;padding:10px 24px;background:#c8a000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:14px">▶ Next Round</button>`;
+  else html += `<p style="color:#aaa;margin-top:10px;font-size:12px">Waiting for host to start next round...</p>`;
+  html += `<button onclick="leaveGame()" style="margin-top:8px;padding:8px 16px;background:#333;color:#ccc;border:none;border-radius:8px;cursor:pointer;font-size:12px;display:block;width:100%">🚪 Leave Table</button>`;
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
