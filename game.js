@@ -232,6 +232,8 @@ function buildGameState(players, dealerIdx) {
 function startPracticeGame() {
   showScreen('screen-game');
   buildGameScreen();
+  scaleGameScreen();
+  window.onresize = scaleGameScreen;
   renderGame(practiceState);
   scheduleBotAction();
 }
@@ -469,7 +471,18 @@ function seatPosition(idx, total) {
 }
 
 // ─── Game screen ──────────────────────────────────────────────────────────────
-function buildGameScreen() {
+function scaleGameScreen() {
+  const el = $('screen-game');
+  if (!el) return;
+  const scaleX = window.innerWidth / 1100;
+  const scaleY = window.innerHeight / 620;
+  const scale = Math.min(scaleX, scaleY);
+  el.style.transform = `scale(${scale})`;
+  el.style.marginLeft = ((window.innerWidth - 1100 * scale) / 2) + 'px';
+  el.style.marginTop = ((window.innerHeight - 620 * scale) / 2) + 'px';
+}
+
+
   $('screen-game').innerHTML = `
     <div id="game-header">
       <span id="hdr-room">${practiceMode ? '🤖 Practice Mode' : 'Room: ' + roomCode}</span>
@@ -524,6 +537,8 @@ function buildGameScreen() {
 function startListeningGame() {
   showScreen('screen-game');
   buildGameScreen();
+  scaleGameScreen();
+  window.onresize = scaleGameScreen;
   listenLeaderboard();
   roomRef.on('value', snap => {
     const data = snap.val(); if (!data||!data.game) return;
