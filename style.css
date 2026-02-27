@@ -15,7 +15,7 @@ h2 { font-size: 24px; text-align: center; margin-bottom: 14px; }
 .sub { text-align: center; color: #aaa; margin-bottom: 12px; }
 .hint { color: #aaa; font-size: 12px; text-align: center; margin-top: 6px; }
 .hidden { display: none !important; }
-.screen { display: none; flex-direction: column; gap: 10px; padding: 30px; max-width: 520px; margin: 0 auto; padding-top: 60px; }
+.screen { display: none; flex-direction: column; gap: 10px; padding: 30px; max-width: 520px; margin: 60px auto 0 auto; }
 .screen:not(.hidden) { display: flex; }
 
 input {
