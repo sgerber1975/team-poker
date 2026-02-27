@@ -63,6 +63,16 @@ button:disabled { background: #555; color: #888; cursor: default; }
 }
 #screen-game:not(.hidden) { display: block; }
 
+body {
+  width: 100vw; min-height: 100vh;
+  background: #0a1f10;
+  color: #f0f0f0;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 15px;
+  overflow-x: hidden;
+  margin: 0;
+}
+
 /* Felt table */
 #table-felt {
   position: absolute;
@@ -145,8 +155,10 @@ button:disabled { background: #555; color: #888; cursor: default; }
   align-items: center; gap: 6px;
   background: rgba(0,0,0,0.5);
   border-radius: 12px 12px 0 0;
-  padding: 8px 16px 10px;
+  padding: 8px 16px 16px;
   z-index: 20;
+  width: auto;
+  min-width: 400px;
 }
 #my-cards { display: flex; gap: 10px; }
 
