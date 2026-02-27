@@ -61,10 +61,10 @@ button:disabled { background: #555; color: #888; cursor: default; }
   width: 1100px;
   height: 620px;
   position: relative;
-  overflow: hidden;
-  margin: 20px auto;
+  overflow: visible;
   border-radius: 12px;
   background: #0a1f10;
+  transform-origin: top left;
 }
 #screen-game:not(.hidden) { display: block; }
 
