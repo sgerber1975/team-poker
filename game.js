@@ -105,9 +105,12 @@ function cardEl(card, faceDown=false, small=false) {
 }
 
 function loadConfig() {
-  try { return JSON.parse(localStorage.getItem('pokerFirebaseConfig')||'null'); } catch { return null; }
+  // Use injected config from GitHub Actions if available
+  if (window.FIREBASE_CONFIG) return window.FIREBASE_CONFIG;
+  // Fall back to manually saved config (for local use)
+  try { return JSON.parse(localStorage.getItem('pokerFirebaseConfig') || 'null'); }
+  catch { return null; }
 }
-function saveConfig(cfg) { localStorage.setItem('pokerFirebaseConfig', JSON.stringify(cfg)); }
 
 // ─── Avatar picker builder ────────────────────────────────────────────────────
 function buildAvatarPicker(containerId) {
@@ -630,4 +633,5 @@ async function nextRound() {
 
 function leaveGame() {
   if(roomRef) roomRef.off(); clearSession(); showScreen('screen-lobby');
+
 }
