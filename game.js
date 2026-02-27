@@ -460,7 +460,7 @@ function dealRound(players, dealerIdx) {
 // ─── Seat positioning ─────────────────────────────────────────────────────────
 function seatPosition(idx, total) {
   const angle = (Math.PI * 2 * idx / total) - Math.PI/2;
-  return { left: 50 + 38 * Math.cos(angle), top: 50 + 32 * Math.sin(angle) };
+  return { left: 50 + 42 * Math.cos(angle), top: 44 + 36 * Math.sin(angle) };
 }
 
 // ─── Game screen ──────────────────────────────────────────────────────────────
