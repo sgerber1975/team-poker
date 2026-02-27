@@ -17,9 +17,9 @@ jobs:
         run: |
           cat > config.js << EOF
           window.FIREBASE_CONFIG = {
-            apiKey: "${{ secrets.FIREBASE_API_KEY }}",
-            projectId: "${{ secrets.FIREBASE_PROJECT_ID }}",
-            databaseURL: "${{ secrets.FIREBASE_DATABASE_URL }}"
+            apiKey: "${{ secrets.API_KEY }}",
+            projectId: "${{ secrets.PROJECT_ID }}",
+            databaseURL: "${{ secrets.DB_URL }}"
           };
           EOF
 
