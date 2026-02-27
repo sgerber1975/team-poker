@@ -131,9 +131,13 @@ function buildAvatarPicker(containerId) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('load', async () => {
-  const cfg = loadConfig();
-  if (!cfg) { showScreen('screen-config'); setupConfigScreen(); return; }
   await loadFirebase();
+  const cfg = loadConfig();
+  if (!cfg || !cfg.apiKey) { 
+    showScreen('screen-config'); 
+    setupConfigScreen(); 
+    return; 
+  }
   initFirebase(cfg);
 
   const session = await loadSession();
@@ -635,4 +639,5 @@ function leaveGame() {
   if(roomRef) roomRef.off(); clearSession(); showScreen('screen-lobby');
 
 }
+
 
