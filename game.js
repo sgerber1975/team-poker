@@ -105,9 +105,9 @@ function cardEl(card, faceDown=false, small=false) {
 }
 
 function loadConfig() {
-  // Use injected config from GitHub Actions if available
-  if (window.FIREBASE_CONFIG) return window.FIREBASE_CONFIG;
-  // Fall back to manually saved config (for local use)
+  if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
+    return window.FIREBASE_CONFIG;
+  }
   try { return JSON.parse(localStorage.getItem('pokerFirebaseConfig') || 'null'); }
   catch { return null; }
 }
@@ -635,3 +635,4 @@ function leaveGame() {
   if(roomRef) roomRef.off(); clearSession(); showScreen('screen-lobby');
 
 }
+
