@@ -36,10 +36,11 @@ function clearSession() {
 }
 async function loadSession() {
   try {
-    return new Promise(r => chrome.storage.local.get('pokerSession', d => r(d.pokerSession || null)));
-  } catch(e) {
-    try { return JSON.parse(localStorage.getItem('pokerSession') || 'null'); } catch { return null; }
-  }
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      return new Promise(r => chrome.storage.local.get('pokerSession', d => r(d.pokerSession || null)));
+    }
+  } catch(e) {}
+  try { return JSON.parse(localStorage.getItem('pokerSession') || 'null'); } catch { return null; }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
