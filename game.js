@@ -1,3 +1,6 @@
+<!-- FULL CORRECTED game.js -->
+<!-- Copy everything below this line and replace your entire game.js file -->
+
 // ─── Load Firebase ────────────────────────────────────────────────────────────
 function loadScript(url) {
   return new Promise((resolve, reject) => {
@@ -57,6 +60,7 @@ async function loadSession() {
   } catch(e) {}
   try { return JSON.parse(localStorage.getItem('pokerSession') || 'null'); } catch { return null; }
 }
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const uid = () => Math.random().toString(36).slice(2,10);
@@ -90,7 +94,11 @@ function buildAvatarPicker(containerId) {
     const d = document.createElement('div');
     d.className = 'av-opt' + (av===myAvatar?' selected':'');
     d.textContent = av;
-    d.onclick = () => { myAvatar = av; c.querySelectorAll('.av-opt').forEach(x => x.classList.remove('selected')); d.classList.add('selected'); };
+    d.onclick = () => { 
+      myAvatar = av; 
+      c.querySelectorAll('.av-opt').forEach(x => x.classList.remove('selected')); 
+      d.classList.add('selected'); 
+    };
     c.appendChild(d);
   });
 }
@@ -134,8 +142,8 @@ function renderLeaderboard(entries) {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('load', async () => {
   await loadFirebase();
-const cfg = loadConfig();
-if (!cfg || !cfg.apiKey) { showScreen('screen-config'); setupConfigScreen(); return; }
+  const cfg = loadConfig();
+  if (!cfg || !cfg.apiKey) { showScreen('screen-config'); setupConfigScreen(); return; }
   initFirebase(cfg);
   const session = await loadSession();
   if (session && session.roomCode) {
@@ -256,12 +264,9 @@ function doBotAction(g, bot) {
   const toCall = (g.currentBet||0) - (g.bets[bot.id]||0);
   const rand = Math.random();
 
-  // Bot decision based on hand strength
   if (strength < 0.2) {
-    // Weak hand — mostly fold, occasionally call
     if (toCall === 0) addLog(g, `${bot.name} checks`);
     else if (rand < 0.15 && toCall < g.stacks[bot.id] * 0.3) {
-      // Occasionally call small bets
       const ca = Math.min(toCall, g.stacks[bot.id]);
       g.stacks[bot.id] -= ca; g.bets[bot.id] = (g.bets[bot.id]||0) + ca;
       if (g.stacks[bot.id]===0) g.allin[bot.id]=true;
@@ -270,7 +275,6 @@ function doBotAction(g, bot) {
       g.folded[bot.id] = true; addLog(g, `${bot.name} folds`);
     }
   } else if (strength < 0.5) {
-    // Medium hand — check/call
     if (toCall === 0) addLog(g, `${bot.name} checks`);
     else if (toCall <= g.stacks[bot.id] * 0.4) {
       const ca = Math.min(toCall, g.stacks[bot.id]);
@@ -281,7 +285,6 @@ function doBotAction(g, bot) {
       g.folded[bot.id] = true; addLog(g, `${bot.name} folds`);
     }
   } else if (strength < 0.75) {
-    // Good hand — call or small raise
     if (rand < 0.4 && g.stacks[bot.id] > g.currentBet * 2) {
       const raiseAmt = Math.min(Math.floor(g.currentBet * 1.5 + rand * 50), g.stacks[bot.id] + (g.bets[bot.id]||0));
       const diff = raiseAmt - (g.bets[bot.id]||0);
@@ -302,7 +305,6 @@ function doBotAction(g, bot) {
       addLog(g, toCall > 0 ? `${bot.name} calls ${ca}` : `${bot.name} checks`);
     }
   } else {
-    // Strong hand — raise aggressively
     const raiseAmt = Math.min(Math.floor(g.currentBet * 2 + rand * 100), g.stacks[bot.id] + (g.bets[bot.id]||0));
     const diff = raiseAmt - (g.bets[bot.id]||0);
     if (diff > 0 && diff <= g.stacks[bot.id] && raiseAmt > g.currentBet) {
@@ -324,14 +326,12 @@ function doBotAction(g, bot) {
   else setTimeout(() => showShowdownOverlay(g), 800);
 }
 
-// Simple hand strength evaluator for bots (0-1 score)
 function evaluateHandStrength(hand, community) {
   const allCards = [...hand, ...community];
   if (allCards.length >= 5) {
     const h = bestHand(allCards);
     return Math.min(1, (h.rank / 9) * 0.7 + Math.max(...hand.map(c=>RANK_VAL[c.rank])) / 56 * 0.3);
   }
-  // Preflop: judge by card values and pairs
   const vals = hand.map(c => RANK_VAL[c.rank]);
   const isPair = vals[0] === vals[1];
   const highCard = Math.max(...vals);
@@ -462,7 +462,7 @@ function dealRound(players, dealerIdx) {
 // ─── Seat positioning ─────────────────────────────────────────────────────────
 function seatPosition(idx, total) {
   const angle = (Math.PI * 2 * idx / total) - Math.PI/2;
-  const rx = 36, ry = 30; // % of container
+  const rx = 36, ry = 30;
   const cx = 50, cy = 46;
   return {
     left: cx + rx * Math.cos(angle),
@@ -470,28 +470,17 @@ function seatPosition(idx, total) {
   };
 }
 
-// ─── Game screen ──────────────────────────────────────────────────────────────
-function scaleGameScreen() {
-  const el = $('screen-game');
-  if (!el) return;
-  const scaleX = window.innerWidth / 1100;
-  const scaleY = window.innerHeight / 620;
-  const scale = Math.min(scaleX, scaleY);
-  el.style.transform = `scale(${scale})`;
-  el.style.marginLeft = ((window.innerWidth - 1100 * scale) / 2) + 'px';
-  el.style.marginTop = ((window.innerHeight - 620 * scale) / 2) + 'px';
-}
-
-
+// ─── Game screen builder (FIXED) ──────────────────────────────────────────────
+function buildGameScreen() {
   $('screen-game').innerHTML = `
     <div id="game-header">
-      <span id="hdr-room">${practiceMode ? '🤖 Practice Mode' : 'Room: ' + roomCode}</span>
+      <span id="hdr-room">${practiceMode ? '🤖 Practice Mode' : 'Room: ' + (roomCode || '—')}</span>
       <span id="hdr-phase"></span>
       <button id="btn-menu" class="small">☰ Menu</button>
     </div>
     <div id="game-menu" class="hidden">
-      ${isHost||practiceMode ? '<button id="btn-next-round-menu">▶ Next Round</button>' : ''}
-      ${isHost||practiceMode ? '<button id="btn-end-game">🏁 End Game</button>' : ''}
+      ${(isHost||practiceMode) ? '<button id="btn-next-round-menu">▶ Next Round</button>' : ''}
+      ${(isHost||practiceMode) ? '<button id="btn-end-game">🏁 End Game</button>' : ''}
       <button id="btn-leave-menu">🚪 Leave Table</button>
       <button id="btn-close-menu" class="small">✕ Close</button>
     </div>
@@ -518,20 +507,41 @@ function scaleGameScreen() {
     </div>
     <div id="log-area"><div id="log"></div></div>
   `;
+
+  // Button bindings
   $('btn-fold').onclick = () => practiceMode ? doPracticeAction('fold') : doAction('fold');
   $('btn-check').onclick = () => practiceMode ? doPracticeAction('check') : doAction('check');
   $('btn-call').onclick = () => practiceMode ? doPracticeAction('call') : doAction('call');
-  $('btn-raise').onclick = () => { const a=parseInt($('raise-inp').value); if(!a||a<=0) return; practiceMode ? doPracticeAction('raise',a) : doAction('raise',a); };
+  $('btn-raise').onclick = () => {
+    const a = parseInt($('raise-inp').value);
+    if (a > 0) practiceMode ? doPracticeAction('raise', a) : doAction('raise', a);
+  };
+
   $('btn-menu').onclick = () => $('game-menu').classList.toggle('hidden');
   $('btn-close-menu').onclick = () => $('game-menu').classList.add('hidden');
   $('btn-leave-menu').onclick = () => { $('game-menu').classList.add('hidden'); leaveGame(); };
+
   if ($('btn-next-round-menu')) $('btn-next-round-menu').onclick = () => { $('game-menu').classList.add('hidden'); nextRound(); };
   if ($('btn-end-game')) $('btn-end-game').onclick = async () => {
     if (!confirm('End the game?')) return;
-    if (!practiceMode) await roomRef.update({ status: 'ended' });
+    if (!practiceMode && roomRef) await roomRef.update({ status: 'ended' });
     leaveGame();
   };
+}
 
+// ─── Scale game screen ────────────────────────────────────────────────────────
+function scaleGameScreen() {
+  const el = $('screen-game');
+  if (!el) return;
+  const scaleX = window.innerWidth / 1100;
+  const scaleY = window.innerHeight / 620;
+  const scale = Math.min(scaleX, scaleY);
+  el.style.transform = `scale(${scale})`;
+  el.style.marginLeft = ((window.innerWidth - 1100 * scale) / 2) + 'px';
+  el.style.marginTop = ((window.innerHeight - 620 * scale) / 2) + 'px';
+}
+
+// ─── Game listener ────────────────────────────────────────────────────────────
 function startListeningGame() {
   showScreen('screen-game');
   buildGameScreen();
@@ -573,8 +583,8 @@ function renderGame(g) {
     if (origIdx===g.actionIdx && !(g.folded||{})[p.id]) seat.classList.add('active-turn');
     if ((g.folded||{})[p.id]) seat.classList.add('folded');
     if (p.id===myId) seat.classList.add('is-me');
-    seat.style.left = pos.left + 'px';
-    seat.style.top  = pos.top  + 'px';
+    seat.style.left = pos.left + '%';
+    seat.style.top  = pos.top  + '%';
     const bet = (g.bets||{})[p.id]||0;
     const status = (g.folded||{})[p.id]?'Folded':(g.allin||{})[p.id]?'All-in':'';
     seat.innerHTML = `
@@ -736,63 +746,6 @@ function showShowdownOverlay(g) {
     const best=hands[0].best;
     winners=hands.filter(h=>compareHandVal(h.best,best)===0).map(h=>h.player);
 
-    // Award pot
     const share=Math.floor(totalPot/winners.length);
     winners.forEach(w=>{g.stacks[w.id]=(g.stacks[w.id]||0)+share;});
-    g.players.forEach(p=>{p.chips=g.stacks[p.id]||0;});
-
-    if (!practiceMode && isHost) {
-      addLog(g,`${winners.map(w=>w.name).join(', ')} wins ${totalPot}!`,true);
-      roomRef.update({game:g});
-      updateLeaderboard(g.players);
-    } else if (practiceMode) {
-      practiceState = g;
-    }
-
-    let html = `<h2 style="color:#ffd700;margin-bottom:12px">🏆 Showdown!</h2>`;
-    hands.forEach(h => {
-      const isWinner = winners.find(w=>w.id===h.player.id);
-      html += `<div style="padding:6px 0;border-bottom:1px solid #333;color:${isWinner?'#ffd700':'#ccc'}">${h.player.avatar||'😎'} <b>${h.player.name}</b>: ${h.best.name}${isWinner?' 🏆':''}</div>`;
-    });
-    html += `<div style="margin-top:12px;color:#ffd700;font-size:18px">Pot: ${totalPot} chips</div>`;
-    html += `<button onclick="nextRound()" style="margin-top:14px;padding:10px 24px;background:#c8a000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:14px">▶ Next Round</button>`;
-    html += `<button onclick="leaveGame()" style="margin-top:8px;padding:8px 16px;background:#333;color:#ccc;border:none;border-radius:8px;cursor:pointer;font-size:12px;display:block;width:100%;margin-top:8px">🚪 Leave Table</button>`;
-    overlay.innerHTML = html;
-    document.body.appendChild(overlay);
-  }
-}
-
-async function nextRound() {
-  const overlay = document.getElementById('showdown-overlay');
-  if (overlay) overlay.remove();
-  if (botTimer) clearTimeout(botTimer);
-
-  if (practiceMode) {
-    const g = practiceState;
-    const alive = g.players.filter(p=>p.chips>0);
-    if (alive.length < 2) { alert(`Game over! ${alive[0]?.name||'Nobody'} wins!`); leaveGame(); return; }
-    const newDealer = (g.dealerIdx+1)%alive.length;
-    practiceState = buildGameState(alive, newDealer);
-    buildGameScreen();
-    listenLeaderboard();
-    renderGame(practiceState);
-    scheduleBotAction();
-    return;
-  }
-
-  const snap = await roomRef.once('value');
-  const g = snap.val().game;
-  const alive = g.players.filter(p=>p.chips>0);
-  if (alive.length<2) { alert(`Game over! ${alive[0]?.name||'Nobody'} wins!`); leaveGame(); return; }
-  dealRound(alive, (g.dealerIdx+1)%alive.length);
-  showScreen('screen-game');
-  buildGameScreen();
-  listenLeaderboard();
-}
-
-function leaveGame() {
-  practiceMode = false; practiceState = null;
-  if (botTimer) clearTimeout(botTimer);
-  if (roomRef) roomRef.off();
-  clearSession(); showScreen('screen-lobby');
-}
+    g.players.forEach(p=>{p.chips=g
