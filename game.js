@@ -532,7 +532,6 @@ function scaleGameScreen() {
     if (!practiceMode) await roomRef.update({ status: 'ended' });
     leaveGame();
   };
-}
 
 function startListeningGame() {
   showScreen('screen-game');
