@@ -517,7 +517,6 @@ function scaleGameScreen() {
       </div>
     </div>
     <div id="log-area"><div id="log"></div></div>
-    <div id="leaderboard"></div>
   `;
   $('btn-fold').onclick = () => practiceMode ? doPracticeAction('fold') : doAction('fold');
   $('btn-check').onclick = () => practiceMode ? doPracticeAction('check') : doAction('check');
