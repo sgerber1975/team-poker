@@ -239,3 +239,8 @@ button:disabled { background: #555; color: #888; cursor: default; }
 #result-content { background: #0d2b18; border-radius: 10px; padding: 14px; margin-bottom: 12px; max-height: 260px; overflow-y: auto; }
 .result-row { padding: 5px 0; border-bottom: 1px solid #1a3d22; font-size: 13px; }
 .result-row.winner { color: #ffd700; font-weight: bold; font-size: 16px; }
+
+#log-area,
+#log {
+  display: none !important;
+}
