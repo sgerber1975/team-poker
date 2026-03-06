@@ -240,80 +240,67 @@ button:disabled { background: #555; color: #888; cursor: default; }
 .result-row { padding: 5px 0; border-bottom: 1px solid #1a3d22; font-size: 13px; }
 .result-row.winner { color: #ffd700; font-weight: bold; font-size: 16px; }
 
-#log-area,
-#log {
-  display: none !important;
-}
-#table-felt {
-  width: 720px;          /* ← make felt noticeably larger */
-  height: 360px;         /* keep ~2:1 ratio or adjust to taste */
-  border: 16px solid #5c3a1e;   /* thicker border looks better when bigger */
-}
+/* ── CUSTOM MODIFICATIONS ─────────────────────────────────────────────── */
 
-#community-cards {
-  gap: 12px;             /* slightly bigger spacing */
-}
-
-.card {
-  width: 58px;           /* bigger community cards feel more premium */
-  height: 82px;
-  font-size: 18px;
-}
-.card.small {
-  width: 36px;
-  height: 52px;
-}
-.card.small .rank { font-size: 12px; }
-.card.small .suit { font-size: 14px; }
-
-/* ── HIDE LOG COMPLETELY ── */
+/* Completely remove the action log panel */
 #log-area,
 #log {
   display: none !important;
 }
 
-/* ── ENLARGE TABLE & CARDS FOR BETTER LOOK ── */
+/* Larger, more premium table appearance */
 #table-felt {
-  width: 720px;
-  height: 360px;
+  width: 740px;               /* slightly wider than 720 for better proportions */
+  height: 370px;
   border: 16px solid #5c3a1e;
-  box-shadow: 0 0 0 8px #3a2210, 0 12px 48px rgba(0,0,0,0.8); /* slightly stronger shadow */
+  box-shadow: 0 0 0 8px #3a2210, 0 12px 48px rgba(0,0,0,0.85);
 }
 
+/* Bigger community cards */
 #community-cards {
-  gap: 12px;
+  gap: 14px;                  /* a bit more breathing room */
 }
 
 .card {
-  width: 58px;
-  height: 82px;
-  font-size: 18px;          /* rank/suit text size */
-  box-shadow: 3px 3px 8px rgba(0,0,0,0.6);
+  width: 60px;
+  height: 84px;
+  font-size: 18px;
+  box-shadow: 3px 3px 8px rgba(0,0,0,0.65);
 }
 
+/* Bigger player hole cards (small) */
 .card.small {
-  width: 36px;
-  height: 52px;
+  width: 38px;
+  height: 54px;
 }
 
-.card.small .rank { font-size: 12px; }
-.card.small .suit { font-size: 14px; }
+.card.small .rank { font-size: 13px; }
+.card.small .suit { font-size: 15px; }
 
-/* ── Optional: Better mobile scaling (add if needed) ── */
-@media (max-width: 768px) or (max-height: 700px) {
+/* Mobile / small-screen adjustments */
+@media (max-width: 800px), (max-height: 720px) {
   #table-felt {
-    width: 580px;          /* scale down a bit on small screens */
-    height: 290px;
+    width: 560px;             /* more aggressive shrink for portrait phones */
+    height: 280px;
     border: 12px solid #5c3a1e;
   }
+
   .card {
-    width: 50px;
-    height: 70px;
+    width: 52px;
+    height: 74px;
     font-size: 16px;
   }
+
   .card.small {
     width: 32px;
     height: 46px;
   }
-}
 
+  .card.small .rank { font-size: 11px; }
+  .card.small .suit  { font-size: 13px; }
+
+  #my-area {
+    min-width: 320px;         /* prevent my-area from becoming too narrow */
+    padding: 8px 16px;
+  }
+}
