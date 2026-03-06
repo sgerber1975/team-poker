@@ -244,3 +244,25 @@ button:disabled { background: #555; color: #888; cursor: default; }
 #log {
   display: none !important;
 }
+#table-felt {
+  width: 720px;          /* ← make felt noticeably larger */
+  height: 360px;         /* keep ~2:1 ratio or adjust to taste */
+  border: 16px solid #5c3a1e;   /* thicker border looks better when bigger */
+}
+
+#community-cards {
+  gap: 12px;             /* slightly bigger spacing */
+}
+
+.card {
+  width: 58px;           /* bigger community cards feel more premium */
+  height: 82px;
+  font-size: 18px;
+}
+.card.small {
+  width: 36px;
+  height: 52px;
+}
+.card.small .rank { font-size: 12px; }
+.card.small .suit { font-size: 14px; }
+}
