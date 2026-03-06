@@ -304,3 +304,33 @@ button:disabled { background: #555; color: #888; cursor: default; }
     padding: 8px 16px;
   }
 }
+/* Extra polish — optional */
+@media (max-width: 800px), (max-height: 720px) {
+  #screen-game {
+    transform-origin: top center;   /* better centering on narrow screens */
+  }
+
+  .seat-name {
+    font-size: 10px;                /* slightly smaller names prevent overlap */
+    max-width: 90px;
+  }
+
+  #pot-display {
+    font-size: 14px;                /* readable but not dominating */
+    padding: 4px 14px;
+  }
+}
+
+/* Make sure my-area doesn't get crushed on very small phones */
+@media (max-width: 500px) {
+  #my-area {
+    min-width: 300px;
+    padding: 6px 12px;
+    font-size: 13px;               /* slightly smaller text in action area */
+  }
+
+  #action-btns button {
+    min-width: 70px;
+    font-size: 13px;
+  }
+}
