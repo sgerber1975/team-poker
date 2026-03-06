@@ -265,4 +265,55 @@ button:disabled { background: #555; color: #888; cursor: default; }
 }
 .card.small .rank { font-size: 12px; }
 .card.small .suit { font-size: 14px; }
+
+/* ── HIDE LOG COMPLETELY ── */
+#log-area,
+#log {
+  display: none !important;
 }
+
+/* ── ENLARGE TABLE & CARDS FOR BETTER LOOK ── */
+#table-felt {
+  width: 720px;
+  height: 360px;
+  border: 16px solid #5c3a1e;
+  box-shadow: 0 0 0 8px #3a2210, 0 12px 48px rgba(0,0,0,0.8); /* slightly stronger shadow */
+}
+
+#community-cards {
+  gap: 12px;
+}
+
+.card {
+  width: 58px;
+  height: 82px;
+  font-size: 18px;          /* rank/suit text size */
+  box-shadow: 3px 3px 8px rgba(0,0,0,0.6);
+}
+
+.card.small {
+  width: 36px;
+  height: 52px;
+}
+
+.card.small .rank { font-size: 12px; }
+.card.small .suit { font-size: 14px; }
+
+/* ── Optional: Better mobile scaling (add if needed) ── */
+@media (max-width: 768px) or (max-height: 700px) {
+  #table-felt {
+    width: 580px;          /* scale down a bit on small screens */
+    height: 290px;
+    border: 12px solid #5c3a1e;
+  }
+  .card {
+    width: 50px;
+    height: 70px;
+    font-size: 16px;
+  }
+  .card.small {
+    width: 32px;
+    height: 46px;
+  }
+}
+
